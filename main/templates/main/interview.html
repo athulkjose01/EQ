@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQ Assessment - Interview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header-section {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .question-card {
+            border-radius: 15px;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            margin-bottom: 1.5rem; /* Adjusted margin */
+        }
+        .question-card .card-body h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem !important;
+        }
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        .thank-you-message {
+            background-color: #e3f2fd;
+            border-left: 5px solid #2575fc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .mic-btn {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1.2rem;
+        }
+        .mic-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+        }
+        .mic-btn.recording {
+            background-color: #0d6efd;
+            animation: pulse 1.5s infinite;
+        }
+        .mic-btn:disabled {
+            background-color: #adb5bd;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .mic-btn.stt-disabled {
+             background-color: #6c757d;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+            }
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+            }
+        }
+        #recordingStatus {
+            font-weight: 500;
+        }
+        /* Added style for processing status */
+        #recordingStatus.processing {
+            color: #fd7e14; /* Orange color for processing */
+        }
+
+
+        .zoom-interface {
+            background-color: #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 1rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .interviewer {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .interviewer-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0d6efd;
+        }
+
+        .mouth {
+            position: relative;
+            width: 40px;
+            height: 14px;
+            background-color: #333;
+            border-radius: 0 0 20px 20px;
+            margin-top: -25px;
+            overflow: hidden;
+            z-index: 10;
+            animation: none;
+        }
+
+        @keyframes speak {
+            0%, 100% { height: 7px; border-radius: 0 0 20px 20px; }
+            50% { height: 14px; border-radius: 0 0 27px 27px; }
+        }
+
+        .countdown-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: rgba(0,0,0,0.7);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Updated styles for .thinking-message */
+        .thinking-message {
+            font-size: 1rem;
+            font-weight: 500;
+            color:rgb(87, 86, 73); /* Darker grey text for better readability on light background */
+            background-color: #e9ecef; /* Light grey background, similar to Bootstrap alerts */
+            padding: 10px 20px; /* Adjusted padding */
+            border-radius: 20px;
+            display: inline-block; /* Allows centering via parent's text-align */
+        }
+
+        .validation-error {
+            background-color: #f8d7da; /* Light red background */
+            border-left: 5px solid #dc3545; /* Red border */
+            padding: 20px; /* Increased padding */
+            margin: 20px auto;
+            border-radius: 5px;
+            color: #b30000; /* More prominent red text color */
+            font-weight: bold; /* Bolder text */
+            font-size: 1.25rem; /* Larger font size */
+            max-width: 80%;
+            text-align: center;
+            display: none;
+        }
+
+        .zoom-controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .zoom-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .zoom-btn.main {
+            width: 45px;
+            height: 45px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1 class="h2">🤖 EQ Assessment</h1>
+            <div class="progress" style="height: 10px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ progress_percent }}%;"
+                     aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Question {{ question_number }} of {{ total_questions }}</span>
+                <span>{{ progress_percent|floatformat:0 }}% Complete</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if not is_first_question %}
+                <div class="thank-you-message">
+                    <i class="fas fa-check-circle me-2"></i> Thank you for your response to the previous question!
+                </div>
+                {% endif %}
+
+                <div id="validationError" class="validation-error">
+                    <i class="fas fa-exclamation-circle me-2"></i> Your response was too short or not relevant. Please try again.
+                </div>
+
+                <div class="question-card card">
+                    <div class="card-body">
+                        <h2 class="h4" id="questionText">{{ question }}</h2>
+                        <form method="post" action="" id="responseForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="response" id="hiddenResponseInput">
+
+                            <div class="d-flex flex-column align-items-center mt-4">
+                                <button type="button" id="recordButton" class="mic-btn mb-3" title="Record Answer">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <span id="recordingStatus" class="ms-2 text-center">Initializing...</span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Wrapper for the thinking message, controls visibility and centering -->
+                <div id="thinkingMessageWrapper" style="text-align: center; display: none; margin-bottom: 1rem;">
+                    <div id="thinkingMessage" class="thinking-message">
+                        Think about the situation and respond honestly...
+                    </div>
+                </div>
+
+                <div class="zoom-interface">
+                    <div class="video-container">
+                        <div class="interviewer">
+                            <!-- Updated interviewer image -->
+                            <img src="https://i.pravatar.cc/150?img=68" alt="Interviewer" class="interviewer-img">
+                            <div class="mouth" id="interviewerMouth"></div>
+                        </div>
+
+                        <div id="countdownContainer" class="countdown-container" style="display: none;">5</div>
+                        <!-- Original thinking message div removed from here -->
+                    </div>
+
+                    <div class="zoom-controls">
+                        <button class="zoom-btn"><i class="fas fa-video"></i></button>
+                        <button class="zoom-btn"><i class="fas fa-microphone-slash"></i></button>
+                        <button class="zoom-btn main"><i class="fas fa-phone-alt"></i></button>
+                        <button class="zoom-btn"><i class="fas fa-user-friends"></i></button>
+                        <button class="zoom-btn"><i class="fas fa-ellipsis-h"></i></button>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <p><em>Listen to the question, then wait for the countdown to complete. Recording will start automatically.</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-5 py-4 bg-dark text-white text-center">
+        <div class="container">
+            <p class="mb-0">© {% now "Y" %} EQ Assessment Tool. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const recordBtn = document.getElementById('recordButton');
+            const micIcon = recordBtn.querySelector('i');
+            const recordingStatusEl = document.getElementById('recordingStatus');
+            const questionTextEl = document.getElementById('questionText');
+            const responseForm = document.getElementById('responseForm');
+            const hiddenResponseInput = document.getElementById('hiddenResponseInput');
+            const validationErrorEl = document.getElementById('validationError');
+            const countdownContainerEl = document.getElementById('countdownContainer');
+            // const thinkingMessageEl = document.getElementById('thinkingMessage'); // Original
+            const thinkingMessageWrapperEl = document.getElementById('thinkingMessageWrapper'); // Get the wrapper
+            const interviewerMouth = document.getElementById('interviewerMouth');
+
+            const synth = window.speechSynthesis;
+            let utterance;
+            let countdownValue = 5;
+            let countdownInterval;
+            let showValidationError = false;
+
+            const PROCESSING_DELAY = 7500; // Delay in milliseconds (e.g., 2.5 seconds)
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'validation') {
+                showValidationError = true;
+                validationErrorEl.style.display = 'block';
+                const errorTextToSpeak = validationErrorEl.textContent.trim();
+                if (errorTextToSpeak) {
+                    setTimeout(() => speakText(errorTextToSpeak), 500);
+                }
+            }
+
+            function speakText(text) {
+                if (!synth || !SpeechSynthesisUtterance) {
+                    recordingStatusEl.textContent = 'TTS not supported.';
+                    if (SpeechRecognition) {
+                        recordingStatusEl.textContent = 'Question displayed. Prepare to speak.';
+                        recordBtn.disabled = true;
+                        startCountdown();
+                    } else {
+                        recordingStatusEl.textContent = 'Speech features not supported. Cannot proceed.';
+                        recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                    }
+                    return;
+                }
+                if (synth.speaking) {
+                    synth.cancel();
+                    setTimeout(() => proceedWithSpeaking(text), 100);
+                } else {
+                    proceedWithSpeaking(text);
+                }
+            }
+
+            function proceedWithSpeaking(text) {
+                utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.onstart = () => {
+                    console.log('TTS started for: ', text);
+                    recordBtn.disabled = true;
+                    if (!showValidationError) {
+                        recordingStatusEl.textContent = 'Reading question...';
+                    }
+                    interviewerMouth.style.animation = 'speak 0.5s infinite linear';
+                };
+                utterance.onend = () => {
+                    console.log('TTS finished for: ', text);
+                    interviewerMouth.style.animation = 'none';
+
+                    if (showValidationError) {
+                        showValidationError = false;
+                        recordBtn.disabled = false;
+                        if (SpeechRecognition) {
+                            recordingStatusEl.textContent = 'Click mic to try again.';
+                        } else {
+                            recordingStatusEl.textContent = 'Please try again (voice input not available).';
+                        }
+                        return;
+                    }
+                    startCountdown();
+                };
+                utterance.onerror = (event) => {
+                    console.error('SpeechSynthesisUtterance.onerror', event);
+                    interviewerMouth.style.animation = 'none';
+                    recordBtn.disabled = true;
+
+                    if (SpeechRecognition) {
+                         recordingStatusEl.textContent = 'Error reading question. Prepare to speak.';
+                         startCountdown();
+                    } else {
+                        recordingStatusEl.textContent = 'Error reading content. Voice input not available.';
+                        recordBtn.classList.add('stt-disabled');
+                    }
+                };
+                synth.speak(utterance);
+            }
+
+            function startCountdown() {
+                countdownValue = 5;
+                countdownContainerEl.textContent = countdownValue;
+                countdownContainerEl.style.display = 'flex';
+                // thinkingMessageEl.style.display = 'block'; // OLD - referring to the message itself
+                thinkingMessageWrapperEl.style.display = 'block'; // NEW - show the wrapper
+                recordingStatusEl.textContent = 'Prepare to speak...';
+                recordBtn.disabled = true;
+
+                countdownInterval = setInterval(() => {
+                    countdownValue--;
+                    countdownContainerEl.textContent = countdownValue;
+
+                    if (countdownValue <= 0) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                        countdownContainerEl.style.display = 'none';
+                        // thinkingMessageEl.style.display = 'none'; // OLD
+                        thinkingMessageWrapperEl.style.display = 'none'; // NEW - hide the wrapper
+
+                        if (SpeechRecognition) {
+                            recordingStatusEl.textContent = 'Starting recording...';
+                            startSpeechToText();
+                        } else {
+                            recordingStatusEl.textContent = 'Countdown complete. Voice input not available.';
+                            recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                        }
+                    }
+                }, 1000);
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let recognition;
+            let isSTTRecording = false;
+            let formSubmitted = false;
+            let accumulatedFinalTranscriptThisSession = '';
+            let silenceTimer = null;
+            const SILENCE_TIMEOUT_DURATION = 7000;
+
+            function startSpeechToText() {
+                if (!SpeechRecognition) {
+                    recordingStatusEl.textContent = "Voice input not supported.";
+                    recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                    return;
+                }
+                if (isSTTRecording) return;
+                if (synth && synth.speaking) {
+                    console.log("TTS is active, deferring STT start.");
+                    return;
+                }
+
+                try {
+                    hiddenResponseInput.value = '';
+                    accumulatedFinalTranscriptThisSession = '';
+                    formSubmitted = false;
+                    clearTimeout(silenceTimer);
+
+                    recordBtn.disabled = false;
+                    recognition.start();
+                } catch (e) {
+                    console.error("Error starting STT recognition:", e);
+                    recordingStatusEl.textContent = 'Mic error. Try clicking mic.';
+                    if (e.name === 'NotAllowedError') recordingStatusEl.textContent = 'Mic permission denied.';
+                    else if (e.name === 'InvalidStateError') recordingStatusEl.textContent = 'Mic busy. Try again.';
+                    resetSTTButtonUIAfterError();
+                }
+            }
+
+            function stopSpeechToText() {
+                if (recognition && isSTTRecording) {
+                    recordBtn.disabled = true; // Keep disabled until processing finishes
+                    recordingStatusEl.textContent = 'Finalizing capture...'; // Intermediate status
+                    clearTimeout(silenceTimer);
+                    recognition.stop();
+                }
+            }
+
+            function resetSTTButtonUIAfterError() {
+                isSTTRecording = false;
+                recordingStatusEl.classList.remove('processing'); // Ensure processing style is removed
+                recordBtn.classList.remove('recording');
+                micIcon.classList.remove('fa-stop'); micIcon.classList.add('fa-microphone');
+                recordBtn.title = "Record Answer";
+                // Only enable button if STT is supported AND no blocking condition exists
+                recordBtn.disabled = !SpeechRecognition || (synth && synth.speaking) || countdownInterval != null;
+                if (!SpeechRecognition) recordBtn.classList.add('stt-disabled');
+            }
+
+            function resetSilenceTimer() {
+                clearTimeout(silenceTimer);
+                silenceTimer = setTimeout(() => {
+                    console.log(`Silence timer expired (${SILENCE_TIMEOUT_DURATION / 1000}s), stopping recognition.`);
+                    if (isSTTRecording) stopSpeechToText();
+                }, SILENCE_TIMEOUT_DURATION);
+            }
+
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = function() {
+                    isSTTRecording = true;
+                    recordingStatusEl.classList.remove('processing'); // Remove processing style if any
+                    recordBtn.classList.add('recording');
+                    micIcon.classList.remove('fa-microphone'); micIcon.classList.add('fa-stop');
+                    recordBtn.title = "Stop Recording";
+                    recordBtn.disabled = false;
+                    recordingStatusEl.textContent = `Listening...`;
+                    console.log('STT recognition started.');
+                    resetSilenceTimer();
+                };
+
+                recognition.onresult = function(event) {
+                    if (formSubmitted || !isSTTRecording) return;
+                    resetSilenceTimer();
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        const transcriptPart = event.results[i][0].transcript;
+                        if (event.results[i].isFinal) {
+                            accumulatedFinalTranscriptThisSession += transcriptPart + ' ';
+                        }
+                    }
+                };
+
+                recognition.onerror = function(event) {
+                    if (formSubmitted) return;
+                    clearTimeout(silenceTimer);
+                    console.error('STT recognition error:', event.error);
+                    let message = 'Recording error: ';
+                    if (event.error === 'no-speech') {
+                        if (accumulatedFinalTranscriptThisSession.trim().length > 0) {
+                            message += 'Pause detected. Finalizing...'; // Change message to indicate processing will occur
+                        } else {
+                            message += 'No speech detected. Try again.';
+                        }
+                    } else if (event.error === 'audio-capture') message += 'Mic not found/error.';
+                    else if (event.error === 'not-allowed') message += 'Mic permission denied.';
+                    else if (event.error === 'network') message += 'Network error.';
+                    else message += event.error + ". Try again.";
+
+                    recordingStatusEl.textContent = message;
+                    // If no speech was detected and nothing accumulated, reset for retry
+                    if (!(event.error === 'no-speech' && accumulatedFinalTranscriptThisSession.trim().length > 0)) {
+                        isSTTRecording = false; // Only set to false if not proceeding
+                        resetSTTButtonUIAfterError();
+                    }
+                    // If there was speech before 'no-speech', onend will still fire and handle it.
+                     // Mark recording as stopped internally regardless, onend will handle final logic
+                    isSTTRecording = false;
+                };
+
+                recognition.onend = function() {
+                    if (formSubmitted) return;
+                    clearTimeout(silenceTimer);
+                    isSTTRecording = false; // Explicitly mark STT as finished here
+
+                    console.log('STT recognition ended. Final accumulated transcript:', accumulatedFinalTranscriptThisSession);
+
+                    const finalResponse = accumulatedFinalTranscriptThisSession.trim();
+
+                    // --- Start of Change: Processing Delay ---
+                    recordBtn.classList.remove('recording'); // Stop pulsing
+                    micIcon.classList.remove('fa-stop'); micIcon.classList.add('fa-microphone'); // Reset icon
+                    recordBtn.disabled = true; // Keep button disabled during processing
+
+                    if (finalResponse.length > 0) {
+                        hiddenResponseInput.value = finalResponse;
+                        recordingStatusEl.textContent = 'Processing response... Please wait.';
+                        recordingStatusEl.classList.add('processing'); // Add style for processing
+                        formSubmitted = true; // Prevent further actions/submissions
+
+                        // Introduce the delay before submitting
+                        setTimeout(() => {
+                            console.log("Processing delay complete. Submitting form.");
+                            recordingStatusEl.classList.remove('processing'); // Remove processing style
+                            responseForm.submit();
+                        }, PROCESSING_DELAY); // Use the defined delay
+
+                    } else {
+                        // Handle case where no response was captured (existing logic)
+                        if (!recordingStatusEl.textContent.startsWith('Recording error:')) {
+                           recordingStatusEl.textContent = 'No response captured. Click mic to try again.';
+                        }
+                         resetSTTButtonUIAfterError(); // Reset button state for retry
+                    }
+                    // --- End of Change: Processing Delay ---
+                };
+            } else {
+                recordBtn.classList.add('stt-disabled'); recordBtn.disabled = true;
+                recordBtn.title = "Voice input not available";
+            }
+
+            recordBtn.addEventListener('click', function() {
+                if (!SpeechRecognition || (recordBtn.disabled && !isSTTRecording && !(synth && synth.speaking)) ) {
+                    // Prevent action if button is disabled for valid reasons (TTS speaking, countdown, processing etc.)
+                    return;
+                }
+
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    countdownContainerEl.style.display = 'none';
+                    thinkingMessageWrapperEl.style.display = 'none'; // NEW
+                    countdownValue = 0;
+                    recordingStatusEl.textContent = 'Countdown skipped. Starting recording...';
+                    startSpeechToText();
+                    return;
+                }
+
+                if (synth && synth.speaking) {
+                    recordBtn.disabled = true;
+                    interviewerMouth.style.animation = 'none';
+                    synth.cancel();
+                    recordingStatusEl.textContent = 'Question reading stopped. Starting recording...';
+                    setTimeout(() => {
+                        startSpeechToText();
+                    }, 200);
+                    return;
+                }
+
+                if (!isSTTRecording) {
+                    // Start recording if not already recording
+                     startSpeechToText();
+                } else {
+                    // Stop recording if currently recording
+                    stopSpeechToText();
+                }
+            });
+
+            // --- Initial Setup Logic (largely unchanged) ---
+            const questionToSpeak = questionTextEl ? questionTextEl.textContent.trim() : "";
+
+            if (!urlParams.get('error')) {
+                if (questionToSpeak) {
+                    if (synth && SpeechRecognition) {
+                        recordBtn.disabled = true; // Disable button until TTS finishes and countdown starts
+                        speakText(questionToSpeak);
+                    } else if (SpeechRecognition) {
+                        recordBtn.disabled = true; // Disable until countdown starts
+                        recordingStatusEl.textContent = 'Question displayed. Prepare to speak.';
+                        startCountdown();
+                    } else if (synth) {
+                        speakText(questionToSpeak);
+                        recordingStatusEl.textContent = 'Reading question... (Voice input not available)';
+                         recordBtn.disabled = true; recordBtn.classList.add('stt-disabled'); // Ensure disabled if no STT
+                    } else {
+                        recordingStatusEl.textContent = 'Speech features not available. Cannot answer.';
+                        recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                    }
+                } else {
+                    console.error("Could not find question text or question is empty.");
+                    recordingStatusEl.textContent = "Error loading question.";
+                    if (SpeechRecognition) {
+                        recordingStatusEl.textContent = 'Error loading question. Prepare to speak if possible.';
+                        recordBtn.disabled = true;
+                        startCountdown(); // Still allow attempt to answer even if question loading failed? Maybe.
+                    } else {
+                        recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                    }
+                }
+            } else { // If there was a validation error on page load
+                 if (SpeechRecognition) {
+                    // Button will be enabled by speakText's onend for validation errors, allowing retry
+                    recordingStatusEl.textContent = 'Validation error. Click mic to try again.'; // Update status
+                } else {
+                    recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                }
+            }
+
+            // Final checks on button state based on browser capabilities
+            if (!SpeechRecognition && !recordBtn.disabled) {
+                 recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                 if (!recordingStatusEl.textContent.includes('Speech features not available') &&
+                     !recordingStatusEl.textContent.includes('Voice input not available')) {
+                    recordingStatusEl.textContent = 'Voice input not available in this browser.';
+                 }
+            }
+
+            // Initial status update if nothing else set it
+            if (recordingStatusEl.textContent === "Initializing...") {
+                 if(!SpeechRecognition && !synth) {
+                    recordingStatusEl.textContent = 'Speech features not available.';
+                    recordBtn.disabled = true; recordBtn.classList.add('stt-disabled');
+                 } else if (SpeechRecognition && !synth.speaking && !countdownInterval && !isSTTRecording && !urlParams.get('error')) {
+                     // If STT ready but waiting for action (e.g. TTS failed or finished quickly)
+                     // Let speakText/startCountdown handle the state
+                 }
+             }
+        });
+    </script>
+</body>
+</html>

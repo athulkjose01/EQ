@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQ Assessment - Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #10b981;
+            --accent-color: #f97316;
+            --background-light: #f9fafb;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --white: #ffffff;
+            --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #10b981 100%);
+            --gradient-secondary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        body {
+            background-color: var(--background-light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,0.1)' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .header-emoji {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.1));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        .page-title {
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--white);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+            background-color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-header {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background-color: var(--white);
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0;
+            font-size: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 50px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--gradient-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+            transform: translateY(-2px);
+        }
+
+        .score-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .score-circle::before {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            z-index: -1;
+        }
+
+        .score-value {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            letter-spacing: 1px;
+        }
+
+        .eq-status {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .category-card {
+            border-left: 5px solid;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            background-color: var(--white);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-score {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e9ecef;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 1.5s ease;
+        }
+
+        .suggestion-item {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            background-color: #f8fafc;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .suggestion-item strong {
+            color: var(--primary-color);
+        }
+
+        .accordion-button {
+            padding: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .accordion-body {
+            padding: 1.25rem;
+            background-color: #fafafa;
+        }
+
+        .badge {
+            padding: 0.5em 0.75em;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+
+        .badge-improvement {
+            background-color: var(--accent-color);
+            color: var(--white);
+        }
+
+        .footer {
+            background-color: #1f2937;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+
+        .footer a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--white);
+            text-decoration: underline;
+        }
+
+        .eq-reference-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin: 2rem 0;
+        }
+
+        .eq-reference-table thead {
+            background: var(--gradient-primary);
+            color: var(--white);
+        }
+
+        .eq-reference-table th,
+        .eq-reference-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .eq-reference-table tbody tr {
+            background-color: var(--white);
+            transition: all 0.3s ease;
+        }
+
+        .eq-reference-table tbody tr:hover {
+            background-color: rgba(99, 102, 241, 0.05);
+        }
+
+        .eq-reference-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Animation for loading chart */
+        @keyframes chartLoad {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .score-circle {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .score-value {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container text-center">
+            <div class="header-emoji">🧠</div>
+            <h1 class="page-title">EQ Assessment Results</h1>
+            <p class="page-subtitle">{{ basic_info.name }}'s Personalized Emotional Intelligence Profile</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} shadow-sm rounded-lg">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <!-- Row containing the Overall Score, centered -->
+                <div class="row justify-content-center mb-4">
+                    <!-- Overall Score -->
+                    <div class="col-md-8 col-lg-6"> <!-- Adjusted column width for better centering appearance -->
+                        <div class="card h-100">
+                            <div class="card-header text-center"> <!-- Added text-center to center the title -->
+                                <h2 class="card-title d-inline-block">Overall EQ Score</h2> <!-- d-inline-block keeps the ::after element positioned correctly -->
+                            </div>
+                            <div class="card-body text-center">
+                                <div class="score-circle">
+                                    <div class="score-value">{{ overall_eq }}</div>
+                                    <div class="score-label">out of 160</div>
+                                </div>
+                                <h3 class="eq-status">{{ eq_status }}</h3>
+                                <p class="mt-3 text-secondary">{{ eq_description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    
+                    
+                
+                <!-- EQ Reference Guide -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <center><h2 class="card-title">EQ Score Reference</h2></center>
+                    </div>
+                    <div class="card-body">
+                        <p>Understanding your emotional intelligence score:</p>
+                        <div class="table-responsive">
+                            <table class="eq-reference-table">
+                                <thead>
+                                    <tr>
+                                        <th>Score Range</th>
+                                        <th>Classification</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Below 70</strong></td>
+                                        <td>Low EQ</td>
+                                        <td>Current emotional intelligence level indicates significant opportunities for development</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>70-79</strong></td>
+                                        <td>Below Average EQ</td>
+                                        <td>Shows basic emotional awareness with room for growth</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>80-99</strong></td>
+                                        <td>Average EQ</td>
+                                        <td>Demonstrates typical emotional intelligence with good foundation</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>100-119</strong></td>
+                                        <td>Good EQ</td>
+                                        <td>Shows strong emotional intelligence capabilities</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>120-139</strong></td>
+                                        <td>High EQ</td>
+                                        <td>Exhibits advanced emotional intelligence skills</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>140-159</strong></td>
+                                        <td>Very High EQ</td>
+                                        <td>Demonstrates exceptional emotional intelligence</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>160+</strong></td>
+                                        <td>Extraordinarily High EQ</td>
+                                        <td>Shows remarkable mastery of emotional intelligence</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category Scores -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h2 class="card-title">Category Breakdown</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for category, score in category_scores.items %}
+                            <div class="col-md-6">
+                                <div class="category-card px-3 py-3" style="border-left-color: 
+                                    {% cycle '#4f46e5' '#10b981' '#f97316' '#8b5cf6' '#ef4444' '#06b6d4' '#f59e0b' '#ec4899' %};">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h3 class="h5 mb-0 fw-bold">{{ category }}</h3>
+                                        <span class="category-score">{{ score|floatformat:1 }}</span>
+                                    </div>
+                                    <div class="progress mt-2">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ score|floatformat:0 }}%; background: 
+                                             {% cycle '#4f46e5' '#10b981' '#f97316' '#8b5cf6' '#ef4444' '#06b6d4' '#f59e0b' '#ec4899' %};" 
+                                             aria-valuenow="{{ score|floatformat:0 }}" aria-valuemin="0" aria-valuemax="25">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Improvement Plan -->
+                <div class="card mt-4">
+                    <div class="card-header d-flex align-items-center">
+                        <h2 class="card-title">Your Growth Journey</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead mb-4">Based on your assessment, we've crafted these personalized suggestions to help enhance your emotional intelligence:</p>
+                        
+                        <div class="accordion" id="improvementAccordion">
+                            {% for category, data in improvement_plan.items %}
+                            <div class="accordion-item border-0 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                    <button class="accordion-button {% if not forloop.first %}collapsed{% endif %} rounded-3" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}">
+                                        {{ category }} <span class="ms-2 badge badge-improvement">Focus Area</span>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                                     data-bs-parent="#improvementAccordion">
+                                    <div class="accordion-body rounded-bottom">
+                                        <div class="suggestion-item">
+                                            <strong>🚀 Start today:</strong> {{ data.easy_start }}
+                                        </div>
+                                        
+                                        <div class="suggestion-item">
+                                            <strong>🔄 Daily practice:</strong> {{ data.daily_practice }}
+                                        </div>
+                                        
+                                        <strong>📈 More ways to improve:</strong>
+                                        <ul class="mt-2">
+                                            {% for suggestion in data.suggestions|slice:"2:" %}
+                                                <li class="mb-2">{{ suggestion }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Response Transcript -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h2 class="card-title">Your Response Record</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-secondary mb-4">Review the questions and your responses from your assessment interview:</p>
+                        
+                        <div class="accordion" id="responseAccordion">
+                            {% for qa in qa_pairs %}
+                            <div class="accordion-item border-0 mb-3 shadow-sm">
+                                <h2 class="accordion-header" id="responseHeading{{ forloop.counter }}">
+                                    <button class="accordion-button collapsed rounded-3" type="button" 
+                                            data-bs-toggle="collapse" data-bs-target="#responseCollapse{{ forloop.counter }}">
+                                        <span class="me-2 badge bg-primary rounded-pill">Q{{ qa.number }}</span> {{ qa.question|truncatechars:60 }}
+                                    </button>
+                                </h2>
+                                <div id="responseCollapse{{ forloop.counter }}" class="accordion-collapse collapse" 
+                                     data-bs-parent="#responseAccordion">
+                                    <div class="accordion-body rounded-bottom">
+                                        <div class="mb-3">
+                                            <strong class="text-primary">Question:</strong> 
+                                            <p class="ms-3 mt-2">{{ qa.question }}</p>
+                                        </div>
+                                        <div>
+                                            <strong class="text-primary">Your Answer:</strong>
+                                            <p class="ms-3 mt-2">{{ qa.answer }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex flex-wrap justify-content-center gap-3 my-5">
+                    <button id="downloadTranscriptBtn" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-2"></i> Download Transcript
+                    </button>
+                    <button onclick="window.print()" class="btn btn-outline-primary">
+                        <i class="fas fa-print me-2"></i> Print Results
+                    </button>
+                    <a href="{% url 'start_new_assessment' %}" class="btn btn-primary">
+                        <i class="fas fa-redo me-2"></i> Start New Assessment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="mb-2">© 2025 AI-Powered EQ Assessment Tool. All rights reserved.</p>
+            <p class="small">Providing insights to help you understand and develop your emotional intelligence.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate progress bars on load
+            const progressBars = document.querySelectorAll('.progress-bar');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+            
+            // Chart data
+            const chartData = {{ chart_data_json|safe }};
+            
+            // Pie chart with improved styling
+            const ctx = document.getElementById('eqPieChart').getContext('2d');
+            const eqPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.map(item => item.category),
+                    datasets: [{
+                        data: chartData.map(item => item.percentage),
+                        backgroundColor: [
+                            '#4f46e5', '#10b981', '#f97316', '#8b5cf6',
+                            '#ef4444', '#06b6d4', '#f59e0b', '#ec4899'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: {
+                                    size: 12,
+                                    family: "'Inter', sans-serif",
+                                    weight: '600'
+                                },
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            },
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1f2937',
+                            bodyColor: '#1f2937',
+                            bodyFont: {
+                                size: 14
+                            },
+                            borderColor: '#e5e7eb',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            boxPadding: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Download transcript
+            document.getElementById('downloadTranscriptBtn').addEventListener('click', function() {
+                fetch('{% url "download_transcript" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Create blob link to download
+                        const blob = new Blob([data.transcript], { type: 'text/plain' });

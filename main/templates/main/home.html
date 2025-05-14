@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQ Intelligence - Discover Your Emotional Intelligence</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #818cf8;
+            --accent-color: #c7d2fe;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+        
+        .hero-section {
+            background: url('https://images.unsplash.com/photo-1553095066-5014bc7b7f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8d2FsbCUyMGJhY2tncm91bmR8ZW58MHx8MHx8&w=1000&q=80') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            padding: 8rem 0;
+            margin-bottom: 3rem;
+            z-index: 1;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.9) 0%, rgba(129, 140, 248, 0.8) 100%);
+            z-index: -1;
+        }
+        
+        .hero-content {
+            color: white;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-size: 3.25rem;
+            text-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Added style for the assessment section */
+        #assessment {
+            margin-top: 3rem; /* Adjust this value as needed */
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            padding: 1.5rem;
+            border-bottom: none;
+        }
+        
+        .form-card {
+            padding: 2rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-color);
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-control {
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            background-color: #f9fafb;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
+        }
+        
+        .form-select {
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            background-color: #f9fafb;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.45);
+        }
+        
+        .eq-info {
+            background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+            border-radius: 15px;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .eq-info h3 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        
+        .eq-info h4 {
+            font-weight: 500;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+        }
+        
+        .eq-info ul {
+            padding-left: 1.25rem;
+        }
+        
+        .eq-info li {
+            margin-bottom: 0.5rem;
+            position: relative;
+            padding-left: 0.5rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background-color: #eef2ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        
+        .info-section {
+            padding: 4rem 0;
+            background: url('https://images.unsplash.com/photo-1557683311-eac922347aa1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .info-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            z-index: -1;
+        }
+        
+        .info-card {
+            padding: 2rem;
+            height: 100%;
+            border-radius: 15px;
+            border: none;
+            background-color: white;
+            transition: all 0.3s;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 3rem 0;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .social-links {
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            margin-right: 0.75rem;
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 767.98px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .hero-subtitle {
+                font-size: 1.25rem;
+            }
+            .info-card {
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="fas fa-brain me-2 text-primary"></i>
+                <span class="fw-bold">EQ Intelligence</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About EQ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Benefits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Testimonials</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Discover Your Emotional Intelligence</h1>
+                <p class="hero-subtitle">Enhance your self-awareness, relationships, and leadership abilities through our advanced EQ assessment</p>
+                <a href="#assessment" class="btn btn-light btn-lg px-4 py-2 fw-bold">Start Assessment <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container" id="assessment">
+        <div class="row">
+            <!-- Left Column: Form -->
+            <div class="col-lg-7 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Begin Your EQ Journey</h3>
+                    </div>
+                    <div class="card-body form-card">
+                
+                            
+                           <form method="post" action="">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                                {{ form.name }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.age.id_for_label }}" class="form-label">{{ form.age.label }}</label>
+                                {{ form.age }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">{{ form.gender.label }}</label>
+                                {{ form.gender }}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.profession.id_for_label }}" class="form-label">{{ form.profession.label }}</label>
+                                {{ form.profession }}
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-rocket me-2"></i> Launch Assessment
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Info -->
+            <div class="col-lg-5">
+                <div class="card eq-info h-100">
+                    <div class="card-body">
+                        <h3><i class="fas fa-lightbulb me-2"></i> What is Emotional Intelligence?</h3>
+                        <p>Emotional Intelligence (EQ) is the ability to understand, use, and manage your emotions in positive ways to communicate effectively, empathize with others, overcome challenges, and defuse conflict.</p>
+                        
+                        <h4>Our Assessment Evaluates:</h4>
+                        <ul>
+                            <li><strong>Self-Awareness</strong> - Understanding your emotions and their impact</li>
+                            <li><strong>Self-Regulation</strong> - Managing impulses and emotions effectively</li>
+                            <li><strong>Motivation</strong> - Using emotions to achieve goals</li>
+                            <li><strong>Empathy</strong> - Sensing and understanding others' feelings</li>
+                            <li><strong>Social Skills</strong> - Building and managing relationships</li>
+                        </ul>
+                        
+                        <div class="alert alert-primary d-flex align-items-center mt-4 mb-0">
+                            <i class="fas fa-clock me-3 fs-4"></i>
+                            <div>
+                                <strong>Duration:</strong> Approximately 10-15 minutes<br>
+                                <small>Your personalized report will be available immediately after completion</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Section -->
+    <section class="info-section my-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Why Emotional Intelligence Matters</h2>
+                <p class="lead text-muted">Discover how EQ impacts various aspects of your life</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="info-card shadow-sm text-center">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h4>Professional Growth</h4>
+                        <p>High EQ individuals are 6x more likely to be effective leaders and earn on average $29,000 more annually.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <div class="info-card shadow-sm text-center">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h4>Relationship Success</h4>
+                        <p>Emotionally intelligent people navigate relationships more effectively and report higher satisfaction in partnerships.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="info-card shadow-sm text-center">
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-smile"></i>
+                        </div>
+                        <h4>Mental Wellbeing</h4>
+                        <p>EQ skills help manage stress, build resilience, and significantly reduce anxiety in challenging situations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">What Our Users Say</h2>
+                <p class="text-muted">Join thousands who've transformed their lives with our EQ assessment</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="card-text">"This assessment opened my eyes to patterns I hadn't noticed. The personalized insights helped me become a more effective manager."</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0">Vidya Mohan</h6>
+                                    <small class="text-muted">Marketing Director</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p class="card-text">"The development plan I received was incredibly actionable. Within months I noticed significant improvements in my relationships."</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0">HariKrishnan S</h6>
+                                    <small class="text-muted">Software Engineer</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="mb-3 text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p class="card-text">"As a team leader, this assessment gave me valuable insights about how to better connect with my team and improve our collaboration."</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                            
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-0">Thomas Jose</h6>
+                                    <small class="text-muted">Project Manager</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-5" style="background: url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&q=80') no-repeat center center; background-size: cover;">
+        <div class="container text-center py-4" style="background: rgba(255, 255, 255, 0.85); border-radius: 15px;">
+            <h2 class="fw-bold mb-3">Ready to Transform Your Life?</h2>
+            <p class="lead mb-4">Take the first step toward better self-awareness and improved relationships</p>
+            <a href="#assessment" class="btn btn-primary btn-lg">Start Your EQ Assessment Now</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5 class="mb-4 text-white">EQ Intelligence</h5>
+                    <p class="text-muted">Empowering individuals and organizations to develop emotional intelligence skills for personal and professional growth.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <h5 class="mb-4 text-white">Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Pricing</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                    <h5 class="mb-4 text-white">Resources</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Research</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Testimonials</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-lg-4">
+                    <h5 class="mb-4 text-white">Stay Updated</h5>
+                    <p class="text-muted mb-3">Subscribe to our newsletter for the latest EQ insights and tips</p>
+                    <div class="input-group mb-3">
+                        <input type="email" class="form-control" placeholder="Your email" aria-label="Email">
+                        <button class="btn btn-primary" type="button">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center copyright">
+                <p class="mb-0">© 2025 EQ Intelligence Assessment. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: athulkjose01/eq:${{ github.sha }}
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: "16.171.42.141"
+        username: "ubuntu"
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          # Stop and remove containers using port 8000
+          containers=$(docker ps -q --filter publish=8000)
+          if [ ! -z "$containers" ]; then
+            docker stop $containers
+            docker rm $containers
+          fi
+          
+          # Pull the new image
+          docker pull athulkjose01/eq:${{ github.sha }}
+          
+          # Stop and remove the eq container if it exists
+          if docker ps -a --format '{{.Names}}' | grep -q '^eq$'; then
+            docker stop eq
+            docker rm eq
+          fi
+
+          # Run the new container
+          docker run -d --name eq -p 8000:8000 athulkjose01/eq:${{ github.sha }}
+          
+          # Clean up unused Docker resources
+          docker system prune -af
