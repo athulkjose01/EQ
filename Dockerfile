@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /usr/src/app
 
 # Install dependencies
-COPY requirements.txt /usr/src/app/
+COPY requirement.txt /usr/src/app/
 RUN pip install --no-cache-dir -r requirement.txt
 
 # Copy project
