@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 class AdvancedEQAssessmentModel:
     def __init__(self):
-        # Initialize Groq client (for polishing, validation, question generationn)
+        # Initialize Groq client (for polishing, validation, question generation)
         self.groq_client = None
         try:
             if 'GROQ_API_KEY' in os.environ:
