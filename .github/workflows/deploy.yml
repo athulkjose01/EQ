@@ -32,7 +32,7 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         host: "135.235.192.249"
-        username: "azureuser"  # or ubuntu, depending on what you chose while creating the VM
+        username: "azureuser"  # or Ubuntu, depending on what you chose while creating the VM
         key: ${{ secrets.VM_KEY }}
         script: |
           echo "Cleaning up old containers on port 8000..."
