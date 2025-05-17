@@ -24,5 +24,6 @@ RUN pip install --no-cache-dir -r requirement.txt
 COPY . .
 
 EXPOSE 80
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "eq_test.wsgi:application"]
+
 
