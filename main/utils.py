@@ -30,7 +30,7 @@ class AdvancedEQAssessmentModel:
             else:
                 logger.warning("GROQ_API_KEY not found in environment variables. Using provided fallback key for Groq features.")
                 # Using the provided fallback key - Essential for question generation now
-                self.groq_client = Groq(api_key="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") # Replace if needed
+                self.groq_client = Groq(api_key="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") # Replace if needed
         except Exception as e:
             logger.error(f"Error initializing Groq client: {e}")
             # If Groq fails to initialize, question generation will fail later.
