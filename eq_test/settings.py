@@ -71,6 +71,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'eq_test.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://eq-e4a2dbhbaxhkdud9.southindia-01.azurewebsites.net',
+]
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
