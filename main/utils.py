@@ -3,10 +3,31 @@
 import numpy as np
 import os
 import logging
-from groq import Groq
 import re # For fallback parsing
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+# This should be called early, before any attempt to access the variables
+load_dotenv()
+
 # Optional: Import for similarity check if needed later
 # import difflib
+
+# Import Groq and handle potential errors
+try:
+    from groq import Groq
+    GROQ_SDK_AVAILABLE = True
+except ImportError:
+    GROQ_SDK_AVAILABLE = False
+    # We'll log the error in __init__ if Groq features are attempted to be used
+    # Define a dummy Groq class if not available to prevent NameError if not handled carefully later
+    class Groq:
+        def __init__(self, api_key=None):
+            # This dummy class will help avoid NameError if GROQ_SDK_AVAILABLE is not checked perfectly everywhere.
+            # The actual error logging for unavailability should happen where it's first needed.
+            pass
+    logging.error("Groq SDK not installed. Please install with 'pip install groq'. Groq features will be unavailable.")
+
 
 # Import transformers and handle potential errors
 try:
@@ -24,16 +45,28 @@ class AdvancedEQAssessmentModel:
     def __init__(self):
         # Initialize Groq client (for polishing, validation, question generation)
         self.groq_client = None
-        try:
-            if 'GROQ_API_KEY' in os.environ:
-                self.groq_client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
+        if GROQ_SDK_AVAILABLE:
+            groq_api_key = os.environ.get('GROQ_API_KEY')
+            if groq_api_key:
+                try:
+                    self.groq_client = Groq(api_key=groq_api_key)
+                    logger.info("Groq client initialized successfully using API key from .env.")
+                except Exception as e:
+                    logger.error(f"Error initializing Groq client with API key from .env: {e}")
             else:
-                logger.warning("GROQ_API_KEY not found in environment variables. Using provided fallback key for Groq features.")
-                # Using the provided fallback key - Essential for question generation now
-                self.groq_client = Groq(api_key="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") # Replace if needed
-        except Exception as e:
-            logger.error(f"Error initializing Groq client: {e}")
-            # If Groq fails to initialize, question generation will fail later.
+                # This is a critical warning if the key is expected from .env
+                logger.error("GROQ_API_KEY not found in environment variables or .env file. Groq features will be unavailable.")
+
+            # Further check if client initialization actually succeeded
+            if not self.groq_client and groq_api_key: # If key was present but init failed
+                logger.error("Groq client initialization failed despite API key being present. Groq features will not work.")
+            elif not self.groq_client and not groq_api_key: # If key was missing
+                 pass # Already logged above
+        else:
+            # This log message might be redundant if the import-level log for Groq SDK is sufficient,
+            # but it's good to reinforce here that the client won't be available.
+            logger.error("Groq SDK is not available, so Groq client cannot be initialized. Groq features will be unavailable.")
+
 
         # Initialize Sentiment Analysis Pipeline (for EQ scoring)
         self.sentiment_analyzer = None
@@ -136,8 +169,6 @@ class AdvancedEQAssessmentModel:
             polished_text = chat_completion.choices[0].message.content.strip()
 
             # --- Post-Polishing Checks (Optional but recommended for robustness) ---
-            # Heuristic check: If the polished text is drastically different, revert.
-            # This requires a similarity metric. Using a simple length check for now.
             raw_len = len(raw_response_text)
             pol_len = len(polished_text)
 
@@ -145,19 +176,15 @@ class AdvancedEQAssessmentModel:
                 logger.warning(f"Polished text is empty. Raw: '{raw_response_text}'. Reverting to raw response.")
                 return raw_response_text
 
-            # More aggressive length check for potential over-editing or hallucination
-            # Allow for some shrinkage due to stutter removal, but not drastic expansion/contraction.
-            if raw_len > 15: # Apply stricter checks only on slightly longer inputs
-                 # Allow shrinkage (e.g. stutter removal) down to 1/3rd, but expansion limited to 2x
+            if raw_len > 15:
                 if pol_len < raw_len / 3 or pol_len > raw_len * 2.0:
                     logger.warning(f"Polished text length significantly different from raw. Raw ({raw_len} chars): '{raw_response_text}', Polished ({pol_len} chars): '{polished_text}'. Reverting to raw response as precaution.")
                     return raw_response_text
 
             # Optional: More advanced check using sequence similarity (e.g., difflib)
             # try:
-            #     # Calculate similarity ratio
+            #     import difflib # Import locally if used
             #     similarity = difflib.SequenceMatcher(None, raw_response_text.lower(), polished_text.lower()).ratio()
-            #     # Define a threshold (e.g., 0.6 - adjust based on testing)
             #     SIMILARITY_THRESHOLD = 0.6
             #     if similarity < SIMILARITY_THRESHOLD:
             #         logger.warning(f"Polished text similarity ({similarity:.2f}) below threshold ({SIMILARITY_THRESHOLD}). Raw: '{raw_response_text}', Polished: '{polished_text}'. Reverting to raw response.")
@@ -173,18 +200,17 @@ class AdvancedEQAssessmentModel:
             logger.error(f"Error polishing response: {e}. Returning raw response.")
             return raw_response_text
 
-    # --- Rest of the class methods (validate_answer, generate_questions, etc.) remain unchanged ---
     def validate_answer(self, question, answer):
         """Validate that the answer is appropriate for the question."""
         if not answer or len(answer.strip()) < 10:
             logger.info(f"Answer too short post-polishing or empty: '{answer}'")
             return False
 
-        try:
-            if not self.groq_client:
-                logger.warning("Groq client not available for validation, using length check.")
-                return len(answer.strip()) >= 20 # Adjusted stricter length if no LLM
+        if not self.groq_client:
+            logger.warning("Groq client not available for validation, using length check.")
+            return len(answer.strip()) >= 20 # Adjusted stricter length if no LLM
 
+        try:
             chat_completion = self.groq_client.chat.completions.create(
                 messages=[
                     {
@@ -194,7 +220,7 @@ class AdvancedEQAssessmentModel:
                             "Validation Criteria:\n"
                             "1. Substantive: Is the answer more than just a few words (e.g., at least 3 meaningful words)?\n"
                             "2. Language: Should be in English. Minor grammar mistakes are acceptable.\n"
-                            "3. Relevance: Does the answer attempt to address the question, even if the content of the answer itself is poor or simple? The validation should be liberal: an answer is valid if it seems like an attempt to answer the question, however flawed. An answer is INVALID only if it's completely off-topic (e.g., 'I like pizza' to a question about workplace conflict), gibberish, or an explicit refusal to answer (like 'Leave me alone').\n" # Added explicit refusal to INVALID criteria
+                            "3. Relevance: Does the answer attempt to address the question, even if the content of the answer itself is poor or simple? The validation should be liberal: an answer is valid if it seems like an attempt to answer the question, however flawed. An answer is INVALID only if it's completely off-topic (e.g., 'I like pizza' to a question about workplace conflict), gibberish, or an explicit refusal to answer (like 'Leave me alone').\n"
                             f"Question: {question}\n\n"
                             f"Answer: {answer}\n\n"
                             "Respond ONLY with 'VALID' or 'INVALID'. Do not explain or add any additional text."
@@ -202,7 +228,8 @@ class AdvancedEQAssessmentModel:
                     }
                 ],
                 model="llama3-8b-8192",
-                max_tokens=10
+                max_tokens=10,
+                temperature=0.1 # Low temperature for consistent validation
             )
 
             validation_response = chat_completion.choices[0].message.content.strip().upper()
@@ -214,24 +241,20 @@ class AdvancedEQAssessmentModel:
                 return False
             else:
                 logger.warning(f"Validation response was unclear: '{validation_response}'. Applying manual length check as fallback.")
-                # Make fallback check slightly stricter if validation failed/unclear
                 return len(answer.strip()) >= 25
 
         except Exception as e:
             logger.error(f"Error in answer validation: {e}")
-            # Make fallback check slightly stricter if validation failed
             return len(answer.strip()) >= 25
 
-    # --- generate_questions method ---
     def generate_questions(self, age, profession, name):
         """
         Generate personalized EQ questions using Groq AI.
         MUST use AI-generated questions. Returns empty list on failure.
         """
-        # Check if Groq client is available. If not, cannot generate questions.
         if not self.groq_client:
             logger.error("Groq client is not available. Cannot generate questions.")
-            return [] # Return empty list indicating failure
+            return []
 
         try:
             chat_completion = self.groq_client.chat.completions.create(
@@ -273,7 +296,7 @@ class AdvancedEQAssessmentModel:
             )
 
             response_text = chat_completion.choices[0].message.content
-            logger.info(f"Raw response from Groq for questions: {response_text[:300]}...") # Log beginning of response
+            logger.info(f"Raw response from Groq for questions: {response_text[:300]}...")
 
             questions = []
             raw_lines = response_text.split('\n')
@@ -282,25 +305,21 @@ class AdvancedEQAssessmentModel:
                 if not line:
                     continue
 
-                # Robust parsing to find the question part after potential pleasantries and "Q:"
                 q_marker_index = line.rfind("Q:")
                 if q_marker_index != -1:
                     question_text = line[q_marker_index + len("Q:"):].strip()
-                    if question_text and question_text.endswith('?'): # Basic check for question format
+                    if question_text and question_text.endswith('?'):
                         questions.append(question_text)
-                # Fallback parsing (less reliable) - attempt if primary fails
                 elif not questions and len(line) > 20 and line.endswith('?') and not line.startswith("Thanks"):
                      logger.debug(f"Trying fallback parsing for line: {line}")
-                     questions.append(line) # Less ideal, might capture non-questions
+                     questions.append(line)
 
-            # Attempt fallback re-parsing if primary parsing yields no results but response text exists
             if not questions and response_text.strip():
                  logger.warning("Primary 'Q:' marker parsing failed. Attempting fallback newline split parsing.")
                  temp_questions = []
                  for line_fb in response_text.split('\n'):
                      line_fb = line_fb.strip()
                      if not line_fb: continue
-                     # Remove common prefixes
                      line_fb = re.sub(r"^(Q:\s*|\d+\.\s*|Thanks for [^.]+\.\s*Q:\s*)", "", line_fb, flags=re.IGNORECASE).strip()
                      if len(line_fb) > 15 and line_fb.endswith('?'):
                          temp_questions.append(line_fb)
@@ -310,65 +329,56 @@ class AdvancedEQAssessmentModel:
                  else:
                     logger.error(f"Fallback parsing also failed to extract questions from response: {response_text}")
 
-
             logger.info(f"Successfully parsed {len(questions)} questions. First few: {questions[:3] if questions else 'None'}.")
 
-            # --- Strict check: Ensure we have enough questions ---
-            # We require exactly 10 questions as per the prompt. Adjust if flexibility is needed.
             MIN_REQUIRED_QUESTIONS = 10
             if len(questions) < MIN_REQUIRED_QUESTIONS:
                 logger.error(f"Failed to generate the required number of questions ({len(questions)} generated, need {MIN_REQUIRED_QUESTIONS}). Returning empty list.")
-                return [] # Indicate failure
+                return []
 
-            # Return exactly 10 questions if more were somehow generated
             return questions[:MIN_REQUIRED_QUESTIONS]
 
         except Exception as e:
             logger.error(f"An unexpected error occurred during question generation: {e}", exc_info=True)
-            # Do NOT fall back to default questions. Return empty list to signal failure.
             return []
 
-    # --- EQ Scoring based on Sentiment Analysis ---
     def _analyze_sentiment_for_scoring(self, response_text):
         """
         Analyze response using sentiment analysis pipeline.
-        Mirrors Streamlit's analyze_emotional_response logic.
         Returns a dictionary with sentiment label and score.
         """
-        # Fallback if pipeline isn't available or response is too short
         if not self.sentiment_analyzer or not response_text or len(response_text.strip()) < 5:
             logger.warning(f"Sentiment analyzer not available or response too short ('{response_text}'). Returning neutral sentiment.")
             return {
                 'sentiment_label': 'NEUTRAL',
-                'sentiment_score': 0.5, # Neutral score equivalent
-                'response_length': len(response_text or "")
+                'sentiment_score': 0.5,
+                'response_length': len(response_text or ""),
+                'emotions': {'neutral': 5.0} # Consistent with Streamlit base
             }
 
         try:
-            # Run sentiment analysis
             results = self.sentiment_analyzer(response_text)
-            if not results: # Handle empty result list
+            if not results:
                  logger.warning(f"Sentiment analysis returned empty result for: '{response_text}'. Using neutral.")
-                 return {'sentiment_label': 'NEUTRAL', 'sentiment_score': 0.5, 'response_length': len(response_text)}
+                 return {'sentiment_label': 'NEUTRAL', 'sentiment_score': 0.5, 'response_length': len(response_text), 'emotions': {'neutral': 5.0}}
 
             sentiment_result = results[0]
-            label = sentiment_result.get('label', 'NEUTRAL').upper() # Ensure uppercase standard
-            score = sentiment_result.get('score', 0.5) # Default to neutral score if missing
+            label = sentiment_result.get('label', 'NEUTRAL').upper()
+            score = sentiment_result.get('score', 0.5)
 
             logger.info(f"Sentiment analysis for response: '{response_text[:50]}...' -> Label: {label}, Score: {score:.4f}")
 
-            # Translate Streamlit's 'emotions' dict concept roughly using sentiment
             emotions = {
                 'positive': score * 10 if label == 'POSITIVE' else 0,
                 'negative': score * 10 if label == 'NEGATIVE' else 0,
-                'neutral': 5 if label == 'NEUTRAL' else 0 # Give neutral a base score as in Streamlit
+                'neutral': 5 if label == 'NEUTRAL' else 0
             }
 
             return {
                 'sentiment_label': label,
                 'sentiment_score': score,
                 'response_length': len(response_text),
-                'emotions': emotions # Pass the derived 'emotions' dict
+                'emotions': emotions
             }
 
         except Exception as e:
@@ -377,22 +387,16 @@ class AdvancedEQAssessmentModel:
                 'sentiment_label': 'NEUTRAL',
                 'sentiment_score': 0.5,
                 'response_length': len(response_text or ""),
-                'emotions': {'neutral': 5} # Fallback emotions
+                'emotions': {'neutral': 5.0}
             }
 
-    # --- create_eq_assessment method ---
     def create_eq_assessment(self, age, profession, gender, name, responses):
         """
         Create an EQ assessment based on user responses using sentiment analysis.
-        Mirrors Streamlit's create_eq_assessment logic.
         """
-        # Perform sentiment analysis on each response
         response_analyses = [self._analyze_sentiment_for_scoring(resp) for resp in responses]
-
-        # Initialize base scores (using Streamlit's starting value of 10.0)
         base_scores = {cat: 10.0 for cat in self.scoring_categories}
 
-        # Simplified scoring mechanism based on Streamlit's logic
         for analysis in response_analyses:
             sentiment_label = analysis.get('sentiment_label', 'NEUTRAL')
             emotions = analysis.get('emotions', {})
@@ -410,10 +414,8 @@ class AdvancedEQAssessmentModel:
             if 'negative' in emotions and emotions['negative'] > 0:
                  base_scores['Trust and Relationship Building'] -= emotions['negative'] * 0.015
                  base_scores['Self-Regulation'] -= emotions['negative'] * 0.01
-                 # Note: Streamlit logic had Trust and Relationship Building decreased twice by negative emotions, keeping it here
-                 base_scores['Trust and Relationship Building'] -= emotions['negative'] * 0.01
+                 base_scores['Trust and Relationship Building'] -= emotions['negative'] * 0.01 # Double hit as per original
 
-        # Gender adjustments (from Streamlit logic)
         gender_lower = gender.lower() if gender else ""
         if gender_lower == 'male':
             base_scores['Self-Regulation'] += 0.5
@@ -424,23 +426,20 @@ class AdvancedEQAssessmentModel:
         elif gender_lower == 'non-binary':
             base_scores['Cultural Awareness'] += 1.2
             base_scores['Trust and Relationship Building'] += 0.5
-        # Note: No explicit 'other' or default adjustment in original Streamlit logic
 
-        # Normalize scores and calculate total EQ (clamping between 0 and 20 per category)
         normalized_scores = {}
         total_eq = 0.0
         for category in self.scoring_categories:
-            score = base_scores.get(category, 10.0) # Get score, default 10
-            normalized_score = max(0.0, min(self.max_category_score, score)) # Clamp between 0 and max
-            normalized_scores[category] = round(normalized_score, 2) # Round for consistency
-            total_eq += normalized_scores[category] # Sum rounded scores
+            score = base_scores.get(category, 10.0)
+            normalized_score = max(0.0, min(self.max_category_score, score))
+            normalized_scores[category] = round(normalized_score, 2)
+            total_eq += normalized_scores[category]
 
-        # Round the overall EQ score as well
         total_eq = round(total_eq, 2)
 
         return {
             'overall_eq': total_eq,
-            'category_scores': normalized_scores, # Already rounded
+            'category_scores': normalized_scores,
             'response_analyses': [{
                 'sentiment_label': r.get('sentiment_label'),
                 'sentiment_score': round(r.get('sentiment_score', 0.5), 4),
@@ -448,12 +447,8 @@ class AdvancedEQAssessmentModel:
              } for r in response_analyses]
         }
 
-
-    # --- Interpretation Logic ---
     def interpret_eq_score(self, eq_score):
-        """Interpret the EQ score based on Streamlit's ranges."""
-        # Max possible score = 9 categories * 20 points/category = 180
-        # Ranges based on Streamlit logic's implied total max ~160-180
+        """Interpret the EQ score."""
         if eq_score < 70:
             return "Low EQ", "Current emotional intelligence level indicates significant opportunities for development"
         elif 70 <= eq_score < 80:
@@ -465,12 +460,10 @@ class AdvancedEQAssessmentModel:
         elif 120 <= eq_score < 140:
             return "High EQ", "Exhibits advanced emotional intelligence skills"
         elif 140 <= eq_score < 160:
-            return "Very High EQ", "Demonstrates exceptional emotional intelligence" # Adjusted label slightly
+            return "Very High EQ", "Demonstrates exceptional emotional intelligence"
         else: # eq_score >= 160
             return "Extraordinarily High EQ", "Shows remarkable mastery of emotional intelligence"
 
-
-    # --- Improvement Suggestions ---
     def generate_improvement_suggestions(self, category_scores):
         """Generate personalized improvement suggestions based on the weakest categories."""
         suggestions = {
@@ -531,33 +524,25 @@ class AdvancedEQAssessmentModel:
         }
 
         sorted_categories = sorted(category_scores.items(), key=lambda x: x[1])
-        lowest_categories = sorted_categories[:3] # Get top 3 lowest scoring categories
+        lowest_categories = sorted_categories[:3]
 
         improvement_plan = {}
         for category, score in lowest_categories:
-            # Only suggest improvements if score is below a threshold (e.g., less than 15/20)
             if score < 15.0 and category in suggestions:
                 improvement_plan[category] = {
-                    'score': score, # Already rounded
+                    'score': score,
                     'suggestions': suggestions[category],
-                    # Provide specific actionable items
                     'easy_start': suggestions[category][0] if suggestions[category] else "Reflect on this area.",
                     'daily_practice': suggestions[category][1] if len(suggestions[category]) > 1 else "Continue exploring this area."
                 }
-            # Limit to max 3 suggestions even if more are below threshold
             if len(improvement_plan) >= 3:
                 break
-
         return improvement_plan
 
-
-# --- Chart Data Generation ---
 def generate_chart_data(category_scores):
     """Generate chart data for visualization, using MAX SCORE = 20."""
     max_score_per_category = 20.0
-
     categories = list(category_scores.keys())
-    # Ensure scores used are the already rounded and clamped ones from category_scores dict
     scores = [category_scores.get(cat, 0.0) for cat in categories]
 
     chart_data = []
@@ -565,9 +550,9 @@ def generate_chart_data(category_scores):
         score_val = scores[i]
         percentage = round((score_val / max_score_per_category) * 100, 1) if max_score_per_category > 0 else 0
         chart_data.append({
-            'category': category.replace(' ', '\n'), # Add newline for better display in chart labels
-            'score': score_val, # Use the rounded score
+            'category': category.replace(' ', '\n'),
+            'score': score_val,
             'percentage': percentage
         })
-
     return chart_data
+
